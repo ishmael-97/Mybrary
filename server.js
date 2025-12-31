@@ -5,15 +5,19 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express')
 const app = express()
 const expressLayouts = require('express-ejs-layouts')
+const bodyParser = require('body-parser')
 
 // Server Must know that the router in index.js exists (import the router into our server, / route of our app ./ relative to the route of app)
 const indexRouter = require('./routes/index')
+const authorRouter = require('./routes/authors')
+
 
 app.set('view engine', 'ejs')
 app.set('views', __dirname + '/views')
 app.set('layout','layouts/layout')
 app.use(expressLayouts)
 app.use(express.static('public'))
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: false}))
 
 // Connect Our Server To The Database (MongoDB)
 const mongoose = require('mongoose')
@@ -24,6 +28,9 @@ db.once('open', () => console.log('Connected to Mongoose'))
 
 // Tell app to use reference to the indexRouter
 app.use('/', indexRouter)
+
+// Tell app to use reference to the indexRouter
+app.use('/authors', authorRouter)
 
 // Server must listen
 app.listen(process.env.PORT || 3000)
