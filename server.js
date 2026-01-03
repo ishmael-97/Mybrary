@@ -10,6 +10,7 @@ const bodyParser = require('body-parser')
 // Server Must know that the router in index.js exists (import the router into our server, / route of our app ./ relative to the route of app)
 const indexRouter = require('./routes/index')
 const authorRouter = require('./routes/authors')
+const bookRouter = require('./routes/books')
 
 
 app.set('view engine', 'ejs')
@@ -29,8 +30,12 @@ db.once('open', () => console.log('Connected to Mongoose'))
 // Tell app to use reference to the indexRouter
 app.use('/', indexRouter)
 
-// Tell app to use reference to the indexRouter
+// Tell app to use reference to the authorRouter
 app.use('/authors', authorRouter)
+
+// Tell app to use reference to the bookRouter
+app.use('/books', bookRouter)
+
 
 // Server must listen
 app.listen(process.env.PORT || 3000)
