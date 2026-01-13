@@ -1,19 +1,9 @@
 const express = require('express')
 // Get router from Express
 const router = express.Router()
-const fs = require('fs')
-const multer = require('multer')
-const path = require('path')
 const Book = require('../models/book')
 const Author = require('../models/author')
-const uploadPath = path.join('public', Book.cover.ImageBasePath)
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif']
-const upload = multer({
-    dest: uploadPath,
-    fileFilter: (req, file, callback) => {
-        callback(null, imageMimeTypes.include(file.mimetype))
-    }
-})
 
 // All Books Route
 router.get('/',  async (req, res) => {
@@ -49,7 +39,6 @@ router.get('/new', async (req, res) => {
 // Route: Creating Book (Recall from REST API: USE POST for Creation)
 // USED send: We send information to alert about the new creation
 router.post('/', upload.single('cover'), async (req, res) => {
-    const fileName = req.file != null ? req.file.filename : null
     const book = new Book({
         title: req.body.title,
         author: req.body.author,
@@ -58,15 +47,13 @@ router.post('/', upload.single('cover'), async (req, res) => {
         coverImageName: fileName,
         description: req.body.description
     })
+    saveCover(book, req.body.cover)
 
     try {
         const newBook = await book.save()
         // res.redirect('books/${newBook.id}')
         res.redirect('books')
     } catch {
-        if (book.coverImageName != null) {
-            removeBookCover(book.coverImageName)
-        }
         // response, existing book, and true (There exists an error)
         renderNewPage(res, book, true)
     }
@@ -82,13 +69,6 @@ router.post('/', upload.single('cover'), async (req, res) => {
     //     }
     // })
 })
-
-function removeBookCover(fileName) {
-    fs.unlink(path.join(uploadPath, fileName), err => {
-        // This will only be seen in the developer's side
-        if (err) console.error(err)
-    })
-}
 
 async function renderNewPage(res, book, hasError = false) {
      try {
@@ -107,5 +87,16 @@ async function renderNewPage(res, book, hasError = false) {
         res.redirect('/books')
     }
 }
+
+// Replaces removeCover (supported by filepond)
+function saveCover(book, coverEncoded) {
+    if (coverEncoded == null) return 
+    const cover = JSON.parse(coverEncoded)
+    if (cover != null && imageMimeTypes.includes(cover.type)) {
+        book.coverImage = new Buffer.from(cover.data, 'base64')
+        book.coverImageType = cover.type
+    }
+}
+
 // Export information to the server (Server must get information from indexRouter)
 module.exports = router
