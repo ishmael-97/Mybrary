@@ -1,7 +1,10 @@
+// NOTE: This is the most important component of the MVC 
+// This is the Controller -> Routes
 const express = require('express')
 // Get router from Express
 const router = express.Router()
 const  Author = require('../models/author')
+const Book = require('../models/book')
 
 // All authors Route
 router.get('/',  async (req, res) => {
@@ -34,8 +37,7 @@ router.post('/', async (req, res) => {
     })
     try {
         const newAuthor = await author.save()
-        //res-redirect('author/${newAuthor.id}')
-        res.redirect('authors')
+        res.redirect('author/${newAuthor.id}')
     } catch {
         res.render('author/new', {
             author: author,
@@ -53,6 +55,73 @@ router.post('/', async (req, res) => {
     //         res.redirect('authors')
     //     }
     // })
+})
+
+// Show list of Authors
+router.get('/:id', async  (req, res) => {
+    try {
+        const author = await Author.findById(req.params.id)
+        const books = await Book.find({ author: author.id}).limi(6).exec()
+        res.render('/authors/show', {
+            author: author,
+            booksByAuthor: books
+        })
+    } catch {
+        // NOTE FOR DEBUGING PURPOSES:
+        // catch(err){console.log(err) res.redirect('/')}
+        res.redirect('/')
+    }
+    res.send('Show Author' + req.params.id)
+})
+
+// Edit Authors
+router.get('/:id/edit', async (req, res) => {
+    try {
+        const author = await Author.findById(req.params.id)
+        res.render('authors/edit', { author: author })
+    } catch {
+        res.redirect('/authors')
+    }
+})
+
+// Update Authors
+router.put('/:id', async (req, res) => {
+    // To use varibale inside a catch, Must define outside Try/Catch
+    let author
+    try {
+        author = await Author.findById(req.params.id)
+        author.name = req.body.name
+        await author.save()
+        res.redirect('/author/${author.id}')
+    } catch {
+        // If To Account: Case where Author Was Not Found At All
+        if (author == null) {
+            res.redirect('/')
+        } else {
+                res.render('author/edit', {
+                author: author,
+                errorMessage: 'Error updating Author'
+            })
+        }
+    }
+})
+
+// Delete Author
+router.delete('/:id', async (req, res) => {
+    let author
+    try {
+        author = await Author.findById(req.params.id)
+        // Removes Author from the database
+        await author.remove()
+        res.redirect('/authors')
+    } catch {
+        // If To Account: Case where Author Was Not Found At All
+        if (author == null) {
+            res.redirect('/')
+        } else {
+            res.redirect('/author/${author.id}')
+        }
+    }
 })
 
 // Export information to the server (Server must get information from indexRouter)

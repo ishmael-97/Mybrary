@@ -6,6 +6,8 @@ const express = require('express')
 const app = express()
 const expressLayouts = require('express-ejs-layouts')
 const bodyParser = require('body-parser')
+// Helps with Methods like PUT & DELETE
+const methodOverride = require('method-override')
 
 // Server Must know that the router in index.js exists (import the router into our server, / route of our app ./ relative to the route of app)
 const indexRouter = require('./routes/index')
@@ -17,6 +19,8 @@ app.set('view engine', 'ejs')
 app.set('views', __dirname + '/views')
 app.set('layout','layouts/layout')
 app.use(expressLayouts)
+// _method tells the app how to use methodOverride: method is Variable =PUT or =DELETE
+app.use(methodOverride('_method'))
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: false}))
 
@@ -35,7 +39,6 @@ app.use('/authors', authorRouter)
 
 // Tell app to use reference to the bookRouter
 app.use('/books', bookRouter)
-
 
 // Server must listen
 app.listen(process.env.PORT || 3000)
