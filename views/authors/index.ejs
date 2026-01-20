@@ -11,5 +11,5 @@
     <a href="/authors/ <%= author.id %>">Views</a>
     <a href="/authors/ <%= author.id %>/edit">Edit</a>
     <!--We Include that partial for deleting-->
-    <%- include('../partials/deleteForm', {url: '/authors/${author.id} '}) %>
+    <%- include('../partials/deleteForm', {url: `/authors/${author.id} `}) %>
 <% }) %>

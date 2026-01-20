@@ -51,7 +51,7 @@ router.post('/', upload.single('cover'), async (req, res) => {
 
     try {
         const newBook = await book.save()
-        res.redirect('books/${newBook.id}')
+        res.redirect(`books/${newBook.id}`)
     } catch {
         // response, existing book, and true (There exists an error)
         renderNewPage(res, book, true)
@@ -95,6 +95,7 @@ router.get('/:id/edit', async (req, res) => {
 router.put('/:id', upload.single('cover'), async (req, res) => {
     let book
     try {
+        // findById is mongoDB related: searches and extracts the book or author in the database (schema in our case)
         book = await Book.findById(req.params.id)
         book.title = req.body.title
         book.author = req.body.author
@@ -108,7 +109,7 @@ router.put('/:id', upload.single('cover'), async (req, res) => {
         // then save the book
         await book.save()
         // After save redirect
-        res.redirect('/books/${book.id}')
+        res.redirect(`/books/${book.id}`)
     } catch {
         // response, existing book, and true (There exists an error)
         if (book != null) {
@@ -165,7 +166,7 @@ async function renderFormPage(res, book, hasError = false) {
                 params.errorMessage = 'Error Creating Book'
             }
         }
-        res.render('books/${form}', params)
+        res.render(`books/${form}`, params)
     } catch {
         res.redirect('/books')
     }
